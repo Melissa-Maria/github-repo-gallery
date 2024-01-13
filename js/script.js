@@ -2,6 +2,9 @@ const overview = document.querySelector(".overview");
 const username = "Melissa-Maria";
 const repoList = document.querySelector(".repo-list");
 
+const repoInformation = document.querySelector(".repos");
+const individualRepo = document.querySelector(".repo-data");
+
 //create an async function to fetch information from your GitHub Profile
 const gitHubData = async function () {
     const getInfo = await fetch (`https://api.github.com/users/${username}`);
@@ -45,4 +48,44 @@ const displayRepos = function (repos) {
         repoItem.innerHTML = `<h3>${repo.name}</h3>`;
         repoList.append(repoItem);
     }
+};
+
+repoList.addEventListener("click", function (e) {
+    if (e.target.matches("h3")) {
+        const repoName = e.target.innerText;
+        //console.log(repoName);
+        getRepoInfo(repoName);
+    }
+});
+
+const getRepoInfo = async function (repoName) {
+    const fetchInfo = await fetch (`https://api.github.com/repos/${username}/${repoName}`);
+    const repoInfo = await fetchInfo.json();
+    console.log(repoInfo);
+    const fetchLanguages = await fetch(repoInfo.languages_url);
+    const languageData = await fetchLanguages.json();
+    console.log(languageData);
+
+    //make a list of languages
+    const languages = [];
+    for (const language in languageData) {
+        languages.push(language);
+    }
+    console.log(languages);
+    displayRepoInfo(repoInfo, languages);
+};
+
+const displayRepoInfo = function (repoInfo, languages) {
+    individualRepo.innerHTML = "";
+    individualRepo.classList.remove("hide");
+    repoInformation.classList.add("hide");
+    //create new div
+    const div = document.createElement("div");
+    div.innerHTML = `
+        <h3>Name: ${repoInfo.name}</h3>
+        <p>Description: ${repoInfo.description}</p>
+        <p>Default Branch: ${repoInfo.default_branch}</p>
+        <p>Languages: ${languages.join(", ")}</p>
+        <a class="visit" href="${repoInfo.html_url}" target="_blank" rel="noreferrer noopener">View Repo on GitHub!</a>`;
+        individualRepo.append(div);
 };
